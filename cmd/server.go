@@ -38,6 +38,7 @@ func main() {
 
 	e.POST("/members", app.CreateMember)
 	e.GET("/members", app.GetMembers)
+	e.GET("/members/:id", app.GetMemberByID)
 
 	// start server
 	e.Logger.Fatal(e.Start(port))

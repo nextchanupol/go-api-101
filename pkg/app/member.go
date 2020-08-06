@@ -10,11 +10,8 @@ import (
 // CreateMember create a new member
 func CreateMember(c echo.Context) (err error) {
 
-	// m := new(model.Member)
 	m := model.InitNewMember()
-
 	if err := c.Bind(m); err != nil {
-
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
@@ -26,6 +23,7 @@ func CreateMember(c echo.Context) (err error) {
 	return c.JSON(http.StatusCreated, &m)
 }
 
+// GetMembers get member list
 func GetMembers(c echo.Context) (err error) {
 
 	list, err := model.GetMembers()
@@ -34,4 +32,16 @@ func GetMembers(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusCreated, &list)
+}
+
+// GetMemberByID get member list
+func GetMemberByID(c echo.Context) (err error) {
+
+	id := c.Param("id")
+	member, err := model.GetMemberByID(id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, &member)
 }

@@ -56,6 +56,7 @@ func CreateMember(member *Member) (*Member, error) {
 	return member, nil
 }
 
+// GetMembers get member list
 func GetMembers() ([]*Member, error) {
 	selectStatement := `SELECT id, first_name, last_name, email, created_at, updated_at FROM member`
 	statement, err := pgsql12.Db.Prepare(selectStatement)
@@ -104,4 +105,54 @@ func GetMembers() ([]*Member, error) {
 
 	}
 	return members, nil
+}
+
+// GetMemberByID get member list
+func GetMemberByID(id string) (*Member, error) {
+	selectStatement := `SELECT id, first_name, last_name, email, created_at, updated_at FROM member where id = $1`
+	statement, err := pgsql12.Db.Prepare(selectStatement)
+	defer statement.Close()
+
+	if err != nil {
+		log.Printf("Prepare error: %v", err)
+		return nil, err
+	}
+
+	rows, err := statement.Query(id)
+	defer rows.Close()
+
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil, err
+	}
+
+	var m = Member{}
+	for rows.Next() {
+
+		var (
+			id        string
+			firstName string
+			lastName  string
+			email     string
+			createdAt time.Time
+			updatedAt time.Time
+		)
+
+		err = rows.Scan(&id, &firstName, &lastName, &email, &createdAt, &updatedAt)
+		if err != nil {
+			fmt.Printf("rows.Scan error: %v\n", err)
+			return nil, err
+		}
+
+		m = Member{
+			ID:        id,
+			FirstName: firstName,
+			LastName:  lastName,
+			Email:     email,
+			CreatedAt: createdAt,
+			UpdatedAt: updatedAt,
+		}
+
+	}
+	return &m, nil
 }
