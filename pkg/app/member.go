@@ -23,5 +23,15 @@ func CreateMember(c echo.Context) (err error) {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, m)
+	return c.JSON(http.StatusCreated, &m)
+}
+
+func GetMembers(c echo.Context) (err error) {
+
+	list, err := model.GetMembers()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, &list)
 }

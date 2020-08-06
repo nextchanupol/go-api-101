@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -18,8 +19,9 @@ type Member struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// Members type list of member
-type Members []Member
+type MemberData struct {
+	List []*Member
+}
 
 // InitNewMember call for iniial member data
 func InitNewMember() *Member {
@@ -45,8 +47,6 @@ func CreateMember(member *Member) (*Member, error) {
 		return nil, err
 	}
 
-	log.Printf("Prepare error: %v %v", member.CreatedAt, member.UpdatedAt)
-
 	_, err = statement.Exec(member.ID, member.FirstName, member.LastName, member.Email, member.Password, member.CreatedAt, member.UpdatedAt)
 
 	if err != nil {
@@ -54,4 +54,54 @@ func CreateMember(member *Member) (*Member, error) {
 		return nil, err
 	}
 	return member, nil
+}
+
+func GetMembers() ([]*Member, error) {
+	selectStatement := `SELECT id, first_name, last_name, email, created_at, updated_at FROM member`
+	statement, err := pgsql12.Db.Prepare(selectStatement)
+	defer statement.Close()
+
+	if err != nil {
+		log.Printf("Prepare error: %v", err)
+		return nil, err
+	}
+
+	rows, err := statement.Query()
+	defer rows.Close()
+
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil, err
+	}
+
+	var members []*Member
+	for rows.Next() {
+
+		var (
+			id        string
+			firstName string
+			lastName  string
+			email     string
+			createdAt time.Time
+			updatedAt time.Time
+		)
+
+		err = rows.Scan(&id, &firstName, &lastName, &email, &createdAt, &updatedAt)
+		if err != nil {
+			fmt.Printf("rows.Scan error: %v\n", err)
+			return nil, err
+		}
+
+		m := &Member{
+			ID:        id,
+			FirstName: firstName,
+			LastName:  lastName,
+			Email:     email,
+			CreatedAt: createdAt,
+			UpdatedAt: updatedAt,
+		}
+		members = append(members, m)
+
+	}
+	return members, nil
 }
